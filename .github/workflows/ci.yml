@@ -1,0 +1,15 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: sudo apt-get update && sudo apt-get install -y coinor-cbc
+      - run: pip install -e ".[dev]"
+      - run: pytest -q -m "not slow"
+      - run: pytest -q -m slow
+      - name: smoke run of the command line (bounded)
+        run: aisleopt range --source real --time-limit-s 20 --out /tmp/out && aisleopt promo --time-limit-s 20 --out /tmp/out
